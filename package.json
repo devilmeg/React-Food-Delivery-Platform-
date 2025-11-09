@@ -4,18 +4,22 @@
   "description": "My React + Parcel project",
   "scripts": {
     "start": "parcel index.html",
-  "build": "parcel build index.html --public-url ./",
+    "build": "parcel build index.html --public-url ./",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },
   "homepage": "https://devilmeg.github.io/React-Food-Delivery-Platform-",
   "dependencies": {
+    "@reduxjs/toolkit": "^2.9.0",
     "gh-pages": "^6.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.11.2"
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^6.11.2",
+    "tailwindcss": "^4.1.13"
   },
   "devDependencies": {
-    "parcel": "^2.12.0"
+    "@tailwindcss/postcss": "^4.1.13",
+    "parcel": "^2.16.1"
   }
 }

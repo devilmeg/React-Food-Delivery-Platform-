@@ -10,3 +10,7 @@
 
 # Environment variables
 /.env
+
+# Ignore dummy.css
+dummy.css
+style.css

@@ -6,4 +6,6 @@ const LOGO_URL="https://www.logodesign.net/logo/smoking-burger-with-lettuce-3624
 // export {CDN_URL,LOGO_URL};//named export
 export {CDN_URL,LOGO_URL};// using {} we can export multiple things from a file.in import also we have to use {}.
 
-export const MENU_URL="https://www.swiggy.com/mapi/menu/pl?page-type=REGULAR_MENU&complete-menu=true&lat=28.6229172&lng=77.4155731&restaurantId=";
+// Remove hardcoded restaurantId
+export const MENU_URL =
+  "https://www.swiggy.com/mapi/menu/pl?page-type=REGULAR_MENU&complete-menu=true&lat=18.5204303&lng=73.8567437&restaurantId=";
