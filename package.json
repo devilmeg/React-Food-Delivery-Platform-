@@ -8,7 +8,8 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },
-  "homepage": "https://aniketthakur.github.io/episode3/",
+  "homepage": "https://devilmeg.github.io/React-Food-Delivery-Platform-/"
+
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.0",
     "react": "^18.3.1",
