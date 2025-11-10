@@ -4,10 +4,9 @@ import "../index.css";
 import Header from "./components/Header";
 import Body from "./components/Body";
 import {
-  createBrowserRouter,
+  createHashRouter,   // ✅ Changed from createBrowserRouter
   RouterProvider,
   Outlet,
-  BrowserRouter,
 } from "react-router-dom";
 import Error from "./components/Error";
 import UserContext from "./utils/UserContext";
@@ -42,7 +41,7 @@ const AppLayout = () => {
         <LocationContext.Provider value={{ ...locationData, setLocationData }}>
           <div className="app">
             <Header />
-            {/* Fallback shown while lazy routes load */}
+            {/* Fallback while lazy routes load */}
             <Suspense fallback={<h1 className="text-center mt-10 text-orange-600">Loading...</h1>}>
               <Outlet />
             </Suspense>
@@ -53,8 +52,8 @@ const AppLayout = () => {
   );
 };
 
-// ✅ Define all routes
-const appRouter = createBrowserRouter([
+// ✅ Define routes with createHashRouter (fixes 404 issue on GitHub Pages)
+const appRouter = createHashRouter([
   {
     path: "/",
     element: <AppLayout />,
@@ -105,10 +104,6 @@ const appRouter = createBrowserRouter([
   },
 ]);
 
-// ✅ Fix for GitHub Pages deployment
+// ✅ Render the router
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <BrowserRouter basename={process.env.PUBLIC_URL}>
-    <RouterProvider router={appRouter} />
-  </BrowserRouter>
-);
+root.render(<RouterProvider router={appRouter} />);
