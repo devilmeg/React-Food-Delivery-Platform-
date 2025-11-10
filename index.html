@@ -2,12 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>React + Parcel</title>
-    <link rel="stylesheet" href="index.css" />
+
+    <!-- 👇 Important: ensures correct routing on GitHub Pages -->
+    <base href="./">
+
+    <!-- Your stylesheet -->
+    <link rel="stylesheet" href="./index.css" />
   </head>
   <body>
     <div id="root"></div>
-    <!-- Correct path -->
+
+    <!-- 👇 Correct relative path for Parcel build -->
     <script type="module" src="./src/App.js"></script>
   </body>
 </html>
