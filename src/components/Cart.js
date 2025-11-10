@@ -10,7 +10,7 @@ const Cart = () => {
     dispatch(clearCart());
   };
 
-  // 💰 Calculate total
+  // 🧮 Calculate total price safely
   const totalPrice = cartItems.reduce((total, item) => {
     const info = item.card?.info || item;
     return total + (info.price || info.defaultPrice || 0);
@@ -18,19 +18,19 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex flex-col items-center py-10 px-4">
-      {/* 🧾 Header Section */}
+      {/* Header Section */}
       <div className="text-center mb-10">
         <h1 className="text-4xl md:text-5xl font-extrabold text-orange-600 mb-3 tracking-wide">
-          🛒 Your Shopping Cart
+          🛒 Your Cart
         </h1>
         <p className="text-gray-600 text-lg">
-          Review your delicious selections and proceed to checkout 🍔
+          Review your added items and proceed to checkout.
         </p>
       </div>
 
-      {/* 🧺 Cart Container */}
-      <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-4xl p-8 transition-all duration-500">
-        {/* If Empty */}
+      {/* Cart Container */}
+      <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-4xl p-8 transition-all duration-500">
+        {/* Empty Cart UI */}
         {cartItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <img
@@ -55,7 +55,7 @@ const Cart = () => {
           </div>
         ) : (
           <>
-            {/* Cart Actions */}
+            {/* Cart Controls */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">
                 Cart Items ({cartItems.length})
@@ -71,13 +71,14 @@ const Cart = () => {
 
             {/* Item List */}
             <div className="divide-y divide-gray-200">
-              <ItemList items={cartItems} />
+              {/* ✅ Reusing ItemList component */}
+              <ItemList category={{ card: { card: { itemCards: cartItems } } }} isOpen={true} />
             </div>
 
-            {/* Footer Summary */}
+            {/* Total Summary */}
             <div className="mt-8 bg-gradient-to-r from-orange-100 to-orange-50 rounded-2xl p-6 text-center shadow-inner">
               <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-                Total:{" "}
+                Total Amount:{" "}
                 <span className="text-orange-600 font-bold">
                   ₹{(totalPrice / 100).toFixed(2)}
                 </span>

@@ -1,211 +1,163 @@
 import { LOGO_URL } from "../utils/constants";
-import { useState, useContext } from "react";
-
+import { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import useOnlineStatus from "../utils/useOnlineStatus";
 import UserContext from "../utils/UserContext";
+import LocationContext from "../utils/LocationContext";
 import { useSelector } from "react-redux";
-import { useEffect } from "react";
-
-// import "../../index.css";   // ✅ Keeping your original comment
 
 const Header = () => {
   const [btnName, setBtnName] = useState("Login");
-  const onlineStatus = useOnlineStatus();
-
-  // ✅ State for hamburger toggle in mobile view
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  //useContext concept
+  const onlineStatus = useOnlineStatus();
   const { loggedInUser } = useContext(UserContext);
-  //console.log(loggedInUser);
-  // console.log(data);
-
-  //Subscribing to the store using selector hook
   const cartItems = useSelector((store) => store.cart.items);
-  console.log(cartItems);
+
+  const { city, setLocationData } = useContext(LocationContext);
+
+  // 🔹 Get user location + reverse geocode city
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          try {
+            const res = await fetch(
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+            );
+            const data = await res.json();
+            const cityName =
+              data.city ||
+              data.locality ||
+              data.principalSubdivision ||
+              "Unknown Area";
+
+            setLocationData({
+              city: cityName,
+              coords: { lat, lon },
+            });
+          } catch (err) {
+            console.error("⚠️ Reverse geocode failed:", err);
+            setLocationData({
+              city: "Location unavailable",
+              coords: { lat, lon },
+            });
+          }
+        },
+        (error) => {
+          console.warn("⚠️ Geolocation permission denied:", error);
+          setLocationData({
+            city: "Access denied",
+            coords: { lat: null, lon: null },
+          });
+        }
+      );
+    } else {
+      setLocationData({
+        city: "Geolocation not supported",
+        coords: { lat: null, lon: null },
+      });
+    }
+  }, [setLocationData]);
+
   return (
     <div
       className="flex justify-between items-center bg-gradient-to-r from-orange-600 to-orange-400 
                  px-6 md:px-10 py-4 text-white shadow-md sticky top-0 z-50 rounded-b-xl"
     >
-      {/* Logo Container */}
-      <div className="flex items-center">
+      {/* 🍔 Logo + City Location */}
+      <div className="flex items-center gap-3">
         <Link to="/">
           <img
             src={LOGO_URL}
             alt="Logo"
-            className="h-14 md:h-16 w-auto cursor-pointer rounded-lg"
+            className="h-12 md:h-14 w-auto cursor-pointer rounded-lg drop-shadow-md"
           />
         </Link>
+
+        {/* 📍 Location Chip */}
+        <div
+          className="flex items-center gap-2 bg-white/25 px-3 py-1 rounded-full shadow-md
+                     backdrop-blur-md border border-white/20 hover:scale-[1.03] transition-all cursor-pointer"
+          title="Detected via browser location"
+        >
+          <span>📍</span>
+          <span className="truncate max-w-[140px] font-medium">{city}</span>
+        </div>
       </div>
 
-      {/* Desktop Navigation Items */}
-      <div className="hidden md:flex nav-Item">
+      {/* 🧭 Navigation (Desktop) */}
+      <div className="hidden md:flex items-center">
         <ul className="flex gap-6 list-none items-center">
-          {/* ✅ Online/Offline Status */}
-          <li className="flex items-center font-semibold">
-            {onlineStatus ? (
+          {/* ✅ Online Status */}
+          <li>
+            <span
+              className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium shadow-sm ${
+                onlineStatus
+                  ? "bg-green-500/30 text-white"
+                  : "bg-red-500/30 text-white"
+              }`}
+            >
               <span
-                className="flex items-center gap-2 px-3 py-1 rounded-full text-sm 
-                               bg-white/20 backdrop-blur-md text-white font-medium 
-                               transition-all"
-              >
-                <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-md"></span>
-                Online
-              </span>
-            ) : (
-              <span
-                className="flex items-center gap-2 px-3 py-1 rounded-full text-sm 
-                               bg-white/20 backdrop-blur-md text-white font-medium 
-                               transition-all"
-              >
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-md"></span>
-                Offline
-              </span>
-            )}
+                className={`w-2.5 h-2.5 rounded-full ${
+                  onlineStatus ? "bg-green-400" : "bg-red-400"
+                } animate-pulse`}
+              ></span>
+              {onlineStatus ? "Online" : "Offline"}
+            </span>
           </li>
 
-          {/* Nav Links */}
-          <li className="cursor-pointer font-medium hover:-translate-y-0.5 hover:text-orange-100 transition">
-            <Link to="/Grocery" className="text-white no-underline">
-              Grocery
-            </Link>
-          </li>
-          <li className="cursor-pointer font-medium hover:-translate-y-0.5 hover:text-orange-100 transition">
-            <Link to="/" className="text-white no-underline">
-              Home
-            </Link>
-          </li>
-          <li className="cursor-pointer font-medium hover:-translate-y-0.5 hover:text-orange-100 transition">
-            <Link to="/about" className="text-white no-underline">
-              About Us
-            </Link>
-          </li>
-          <li className="cursor-pointer font-medium hover:-translate-y-0.5 hover:text-orange-100 transition">
-            <Link to="/contact" className="text-white no-underline">
-              Contact Us
-            </Link>
-          </li>
+          {/* 🔗 Links */}
+          <li><Link to="/" className="hover:text-orange-100">Home</Link></li>
+          <li><Link to="/Grocery" className="hover:text-orange-100">Grocery</Link></li>
+          <li><Link to="/about" className="hover:text-orange-100">About</Link></li>
+          <li><Link to="/contact" className="hover:text-orange-100">Contact</Link></li>
 
-          {/* Cart with badge */}
-          {/* Cart with dynamic badge */}
-          <li className="relative cursor-pointer font-medium hover:text-orange-100 transition">
+          {/* 🛒 Cart */}
+          <li className="relative">
             <Link to="/cart" className="text-white no-underline">
               Cart
               {cartItems.length > 0 && (
-                <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+                <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full shadow-md">
                   {cartItems.length}
                 </span>
               )}
             </Link>
           </li>
 
-          {/* Login/Logout Button */}
+          {/* 🔐 Login / Logout */}
           <li>
             <button
-              aria-label={btnName} // ✅ Accessibility
-              className="px-5 py-2 rounded-full bg-gradient-to-r from-orange-600 to-orange-400 
-                         font-semibold text-sm text-white shadow-md hover:from-orange-700 
-                         hover:to-orange-500 transition transform hover:-translate-y-0.5"
-              onClick={() => {
-                btnName === "Login"
-                  ? setBtnName("Logout")
-                  : setBtnName("Login");
-              }}
+              aria-label={btnName}
+              className="px-5 py-2 rounded-full bg-white/20 backdrop-blur-md
+                         border border-white/20 font-semibold text-sm text-white
+                         hover:bg-white/30 transition shadow-md"
+              onClick={() => setBtnName(btnName === "Login" ? "Logout" : "Login")}
             >
               {btnName}
             </button>
           </li>
+
+          {/* 👤 Logged User */}
           <li className="px-3 py-2 font-bold border-l border-white/30">
             {loggedInUser}
           </li>
         </ul>
       </div>
 
-      {/* ✅ Mobile Hamburger Button */}
+      {/* 📱 Mobile Menu */}
       <div className="md:hidden flex items-center">
         <button
-          aria-label="Toggle Menu"
           className="text-2xl focus:outline-none"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
           {isMenuOpen ? "✖" : "☰"}
         </button>
       </div>
-
-      {/* ✅ Mobile Menu Dropdown */}
-      {isMenuOpen && (
-        <div className="absolute top-20 left-0 w-full bg-orange-500 shadow-lg rounded-b-xl md:hidden">
-          <ul className="flex flex-col gap-4 p-6 text-white font-medium">
-            <li>
-              {onlineStatus ? (
-                <span className="flex items-center gap-2 text-sm">
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-                  Online
-                </span>
-              ) : (
-                <span className="flex items-center gap-2 text-sm">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
-                  Offline
-                </span>
-              )}
-            </li>
-            <li>
-              <Link to="/Grocery" onClick={() => setIsMenuOpen(false)}>
-                Grocery
-              </Link>
-            </li>
-            <li>
-              <Link to="/" onClick={() => setIsMenuOpen(false)}>
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link to="/about" onClick={() => setIsMenuOpen(false)}>
-                About Us
-              </Link>
-            </li>
-            <li>
-              <Link to="/contact" onClick={() => setIsMenuOpen(false)}>
-                Contact Us
-              </Link>
-            </li>
-            <li className="relative cursor-pointer font-medium hover:text-orange-100 transition">
-              <Link to="/cart" className="text-white no-underline">
-                Cart
-                {cartItems.length > 0 && (
-                  <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
-                    {cartItems.length}
-                  </span>
-                )}
-              </Link>
-            </li>
-
-            <li>
-              <button
-                aria-label={btnName}
-                className="w-full px-5 py-2 rounded-full bg-gradient-to-r from-orange-600 to-orange-400 
-                           font-semibold text-sm text-white shadow-md hover:from-orange-700 
-                           hover:to-orange-500 transition"
-                onClick={() => {
-                  btnName === "Login"
-                    ? setBtnName("Logout")
-                    : setBtnName("Login");
-                  setIsMenuOpen(false);
-                }}
-              >
-                {btnName}
-              </button>
-            </li>
-            <li className="px-3 py-2 font-bold border-t border-white/30">
-              {loggedInUser}
-            </li>
-          </ul>
-        </div>
-      )}
     </div>
   );
 };
 
-// this is standard way to export a component.
 export default Header;

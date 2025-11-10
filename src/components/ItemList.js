@@ -1,75 +1,86 @@
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import { CDN_URL } from "../utils/constants";
 import { useDispatch } from "react-redux";
-import { addItem, removeItem } from "../utils/cartSlice";
+import { addItem } from "../utils/cartSlice";
+import { getPredictedFreshness } from "../utils/freshnessScore";
+import { calculateDistance } from "../utils/distanceCalculator";
+import LocationContext from "../utils/LocationContext";
 
-const ItemList = ({ category, isOpen, items }) => {
+const ItemList = ({ category, isOpen }) => {
   const dispatch = useDispatch();
+  const { coords } = useContext(LocationContext);
+  const [freshnessData, setFreshnessData] = useState({});
 
-  // ✅ Handle both Menu and Cart mode
-  const itemList = items || category?.card?.card?.itemCards || [];
-
-  // ✅ Track expanded descriptions
-  const [expandedItems, setExpandedItems] = useState([]);
-
-  const handleAdd = (item) => {
-    const info = item.card?.info || item;
-    dispatch(addItem(info));
+  const handleAddItem = (item) => {
+    dispatch(addItem(item.card?.info || item));
   };
 
-  const handleRemove = () => {
-    dispatch(removeItem());
-  };
+  useEffect(() => {
+    async function fetchFreshness() {
+      const prepTime = Math.floor(Math.random() * 15) + 10;
+      const restaurantLat = 28.5355;
+      const restaurantLon = 77.3910;
 
-  const toggleExpand = (index) => {
-    setExpandedItems((prev) => {
-      const updated = [...prev];
-      updated[index] = !updated[index];
-      return updated;
-    });
-  };
+      let deliveryTime = 25;
+      if (coords.lat && coords.lon) {
+        const distance = calculateDistance(
+          coords.lat,
+          coords.lon,
+          restaurantLat,
+          restaurantLon
+        );
+        const avgSpeed = 25; // km/h
+        deliveryTime = Math.ceil((distance / avgSpeed) * 60);
+      }
+
+      const { freshnessScore, temperature } = await getPredictedFreshness(
+        prepTime,
+        deliveryTime
+      );
+
+      setFreshnessData({ freshnessScore, temperature, deliveryTime });
+    }
+
+    fetchFreshness();
+  }, [coords]);
+
+  // ✅ Safe fallback for inconsistent data shape
+  const items =
+    category?.card?.card?.itemCards ||
+    category?.card?.itemCards ||
+    category?.itemCards ||
+    [];
 
   return (
     <div
       className={`overflow-hidden transition-all duration-500 ease-in-out ${
-        isOpen
-          ? "max-h-[1000px] opacity-100"
-          : isOpen === undefined
-          ? "opacity-100"
-          : "max-h-0 opacity-0"
+        isOpen ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
       }`}
     >
       <ul className="px-5 pb-5 grid grid-cols-1 gap-4">
-        {itemList.map((item, index) => {
-          const info = item.card?.info || item;
+        {items.map((item, index) => {
           const {
-            id,
             name,
             description,
             price,
             defaultPrice,
             cloudinaryImageId,
             imageId,
-          } = info;
+          } = item.card?.info || item;
 
           const imgUrl =
-            cloudinaryImageId
-              ? CDN_URL + cloudinaryImageId
-              : imageId
-              ? CDN_URL + imageId
+            cloudinaryImageId || imageId
+              ? CDN_URL + (cloudinaryImageId || imageId)
               : null;
 
-          const isExpanded = expandedItems[index] || false;
-          const isLongDesc = description && description.length > 100;
+          const freshness = freshnessData.freshnessScore ?? 85;
 
           return (
             <li
-              key={id || `${name}-${index}`} // ✅ unique fallback key
-              className="flex items-start justify-between gap-4 p-4 bg-white rounded-xl shadow-md
-                         hover:shadow-xl hover:scale-[1.02] transition-all duration-300 
-                         animate-fadeIn"
+              key={`${item.card?.info?.id || index}-${index}`}
+              className="flex items-start justify-between gap-4 p-4 bg-white rounded-xl shadow-md 
+                         hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
             >
-              {/* ✅ Left Side: Item Info */}
               <div className="flex flex-col flex-grow">
                 <div className="flex justify-between items-center">
                   <span className="font-semibold text-gray-900 text-base tracking-wide">
@@ -81,23 +92,43 @@ const ItemList = ({ category, isOpen, items }) => {
                 </div>
 
                 {description && (
-                  <p className="text-gray-700 text-sm mt-2 leading-relaxed">
-                    {isExpanded || !isLongDesc
-                      ? description
-                      : description.slice(0, 100) + "..."}
-                    {isLongDesc && (
-                      <button
-                        onClick={() => toggleExpand(index)}
-                        className="text-orange-600 font-medium text-xs ml-1 hover:underline"
-                      >
-                        {isExpanded ? "Read Less" : "Read More"}
-                      </button>
-                    )}
+                  <p className="text-gray-700 text-sm mt-2 leading-relaxed line-clamp-2">
+                    {description}
                   </p>
                 )}
+
+                {/* 🧠 Freshness Indicator */}
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-700">
+                    🍱 Freshness Score:
+                  </span>
+                  <span
+                    className={`font-bold ${
+                      freshness > 80
+                        ? "text-green-600"
+                        : freshness > 60
+                        ? "text-yellow-500"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {freshness}%
+                  </span>
+                </div>
+
+                <div className="h-2 mt-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-700 ${
+                      freshness > 80
+                        ? "bg-green-500"
+                        : freshness > 60
+                        ? "bg-yellow-400"
+                        : "bg-red-500"
+                    }`}
+                    style={{ width: `${freshness}%` }}
+                  ></div>
+                </div>
               </div>
 
-              {/* ✅ Right Side: Image + +|- Buttons */}
               <div className="flex flex-col items-center gap-2 flex-shrink-0">
                 {imgUrl && (
                   <img
@@ -106,18 +137,17 @@ const ItemList = ({ category, isOpen, items }) => {
                     className="w-20 h-20 object-cover rounded-lg shadow-lg"
                   />
                 )}
-                <div className="flex items-center justify-center border border-gray-300 rounded-lg">
+
+                {/* + | - buttons */}
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={() => handleAdd(item)}
-                    className="px-3 py-1 bg-green-500 text-white font-bold rounded-l-lg hover:bg-green-600 transition"
+                    onClick={() => handleAddItem(item)}
+                    className="bg-green-500 text-white font-bold w-7 h-7 rounded-full shadow hover:bg-green-600"
                   >
                     +
                   </button>
-                  <button
-                    onClick={handleRemove}
-                    className="px-3 py-1 bg-red-500 text-white font-bold rounded-r-lg hover:bg-red-600 transition"
-                  >
-                    −
+                  <button className="bg-red-500 text-white font-bold w-7 h-7 rounded-full shadow hover:bg-red-600">
+                    -
                   </button>
                 </div>
               </div>

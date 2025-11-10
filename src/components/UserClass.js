@@ -1,77 +1,98 @@
 import React from "react";
-import "../../index.css"; // Same CSS file
-import UserContext from "../utils/UserContext";
 
 class UserClass extends React.Component {
   constructor(props) {
     super(props);
-    console.log(props);
 
     this.state = {
-      userInfo: {
-        name: "Dummy Name",
-        location: "Dummy Location",
-        avatar_url: "https://i.pravatar.cc/150?img=12", // default image
-      },
+      userData: null,
+      isLoading: true,
+      error: null,
     };
-    // console.log("Child constructor is called");
   }
 
   async componentDidMount() {
-    // console.log("Child component did mount is called");
-    try {
-      const data = await fetch("https://api.github.com/users/devilmeg");
-      const json = await data.json();
+    const { githubUsername } = this.props;
 
-      this.setState({
-        userInfo: json,
-      });
-      console.log(json);
-    } catch (error) {
-      console.error("Failed to fetch GitHub user:", error);
+    try {
+      const res = await fetch(`https://api.github.com/users/${githubUsername}`);
+      if (!res.ok) throw new Error("Failed to fetch GitHub data");
+
+      const data = await res.json();
+      this.setState({ userData: data, isLoading: false });
+    } catch (err) {
+      this.setState({ error: err.message, isLoading: false });
+      console.error("❌ GitHub Fetch Error:", err);
     }
   }
 
   render() {
-    // console.log("Child render is called");
-    const { name, location, avatar_url } = this.state.userInfo;
-    const { role } = this.props;
+    const { name, role } = this.props;
+    const { userData, isLoading, error } = this.state;
+
+    if (isLoading) {
+      return (
+        <div className="bg-white p-6 rounded-2xl shadow-lg w-64 h-72 flex flex-col justify-center items-center">
+          <div className="w-14 h-14 border-4 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-600 mt-4 font-medium">Loading GitHub Data...</p>
+        </div>
+      );
+    }
+
+    if (error || !userData) {
+      return (
+        <div className="bg-white p-6 rounded-2xl shadow-lg w-64 text-center text-red-500 font-medium">
+          ⚠️ Failed to load profile
+        </div>
+      );
+    }
 
     return (
-      <div className="user-card bg-white/80 backdrop-blur-md rounded-xl shadow-lg p-5 w-full max-w-xs hover:shadow-2xl transition transform hover:-translate-y-2 cursor-pointer text-center">
-        
-        {/* User Avatar */}
+      <div
+        className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl 
+                   transition-transform hover:-translate-y-2 w-72 p-6 text-center"
+      >
+        {/* ✅ Profile Picture */}
         <img
-          src={avatar_url}
-          alt="Profile"
-          className="user-avatar w-28 h-28 mx-auto rounded-full border-4 border-orange-400 mb-4 object-cover"
+          src={userData.avatar_url}
+          alt={`${name}'s GitHub Avatar`}
+          className="w-24 h-24 rounded-full mx-auto shadow-md border-4 border-orange-200"
         />
-        {/* <div>
-          loggedInUser
-          <UserContext.Consumer>
-            {({loggedInUser})=><h1 className="font-bold text-lg">{loggedInUser}</h1>}
-          </UserContext.Consumer>
-        </div> */}
-        {/* User Name & Location */}
-        <h3 className="user-name text-xl font-bold text-gray-900 truncate">{name}</h3>
-        <h4 className="user-location text-gray-500 text-sm">{location}</h4>
 
-        {/* Role */}
-        <p className="user-role mt-2 text-gray-700 font-medium">{role}</p>
+        {/* ✅ Developer Info */}
+        <h3 className="mt-4 text-xl font-bold text-gray-900">{name}</h3>
+        <p className="text-sm text-gray-600 font-medium">{role}</p>
 
-        {/* Description */}
-        <p className="user-desc mt-3 text-gray-600 text-sm">
-          Passionate about building scalable applications and crafting delightful user experiences.
-        </p>
-
-        {/* ✅ Connect Button */}
-        <button
-          className="mt-4 w-full px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-400 text-white rounded-xl font-semibold 
-                     hover:from-orange-600 hover:to-orange-500 transition-all shadow-md hover:shadow-lg"
-          onClick={() => alert(`Connecting with ${name}...`)}
+        {/* ✅ GitHub Username */}
+        <a
+          href={userData.html_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-orange-500 text-sm font-semibold mt-2 inline-block hover:underline"
         >
-          Connect
-        </button>
+          @{userData.login}
+        </a>
+
+        {/* ✅ Bio / Location */}
+        <p className="text-gray-500 text-xs mt-2">
+          {userData.bio ? userData.bio : "Passionate Developer 💻"}
+        </p>
+        {userData.location && (
+          <p className="text-gray-500 text-xs mt-1">
+            📍 {userData.location}
+          </p>
+        )}
+
+        {/* ✅ GitHub Link Button */}
+        <a
+          href={userData.html_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-block px-4 py-2 bg-orange-500 text-white text-sm 
+                     font-semibold rounded-full shadow hover:bg-orange-600 transition"
+        >
+          View GitHub Profile
+        </a>
       </div>
     );
   }
