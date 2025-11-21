@@ -2,14 +2,14 @@
   "name": "episode3",
   "version": "1.0.0",
   "description": "React Food Delivery Platform - Swiggy/Zomato Clone",
- 
-
   "homepage": "https://devilmeg.github.io/React-Food-Delivery-Platform-/",
   "scripts": {
     "start": "parcel index.html",
     "build": "parcel build index.html --public-url ./",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "test": "jest",
+    "watch-test": "jest --watchAll"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.0",
@@ -20,9 +20,19 @@
     "redux": "^5.0.1"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.28.5",
+    "@babel/preset-react": "^7.28.5",
     "@tailwindcss/postcss": "^4.1.17",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "babel-jest": "^30.2.0",
     "gh-pages": "^6.1.1",
-    "parcel": "^2.13.3"
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "parcel": "^2.13.3",
+    "react-test-renderer": "^18.3.1"
   },
   "keywords": [],
   "author": "Aniket Kumar Thakur",

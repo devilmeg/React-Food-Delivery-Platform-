@@ -29,7 +29,7 @@ const ItemList = ({ category, isOpen }) => {
           restaurantLat,
           restaurantLon
         );
-        const avgSpeed = 25; // km/h
+        const avgSpeed = 25; 
         deliveryTime = Math.ceil((distance / avgSpeed) * 60);
       }
 
@@ -44,7 +44,6 @@ const ItemList = ({ category, isOpen }) => {
     fetchFreshness();
   }, [coords]);
 
-  // ✅ Safe fallback for inconsistent data shape
   const items =
     category?.card?.card?.itemCards ||
     category?.card?.itemCards ||
@@ -77,6 +76,7 @@ const ItemList = ({ category, isOpen }) => {
 
           return (
             <li
+              data-testid="menu-item"
               key={`${item.card?.info?.id || index}-${index}`}
               className="flex items-start justify-between gap-4 p-4 bg-white rounded-xl shadow-md 
                          hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
@@ -97,12 +97,13 @@ const ItemList = ({ category, isOpen }) => {
                   </p>
                 )}
 
-                {/* 🧠 Freshness Indicator */}
+                {/* Freshness Indicator */}
                 <div className="mt-3 flex items-center gap-2">
                   <span className="text-sm font-semibold text-gray-700">
                     🍱 Freshness Score:
                   </span>
                   <span
+                    data-testid="freshness-score"
                     className={`font-bold ${
                       freshness > 80
                         ? "text-green-600"
@@ -141,11 +142,13 @@ const ItemList = ({ category, isOpen }) => {
                 {/* + | - buttons */}
                 <div className="flex items-center gap-2">
                   <button
+                    data-testid="add-btn"
                     onClick={() => handleAddItem(item)}
                     className="bg-green-500 text-white font-bold w-7 h-7 rounded-full shadow hover:bg-green-600"
                   >
                     +
                   </button>
+
                   <button className="bg-red-500 text-white font-bold w-7 h-7 rounded-full shadow hover:bg-red-600">
                     -
                   </button>

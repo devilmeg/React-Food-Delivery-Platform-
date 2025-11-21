@@ -1,9 +1,8 @@
 import RestaurantCard,{withPromotedLabel} from "./RestaurantCard";
 import Shimmer from "./Shimmer";
-import { useState, useEffect, use } from "react";
+import { useState,useEffect,useContext } from "react";
 import { Link } from "react-router-dom";
 import useOnlineStatus from "../utils/useOnlineStatus";
-import { useState,useEffect,useContext } from "react";
 import UserContext from "../utils/UserContext";
 
 const Body = () => {

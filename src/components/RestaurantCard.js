@@ -4,6 +4,7 @@ import LocationContext from "../utils/LocationContext";
 import { calculateDistance } from "../utils/distanceCalculator";
 
 const RestaurantCard = ({ resData }) => {
+  // console.log(resData);
   const { coords } = useContext(LocationContext);
 
   const {

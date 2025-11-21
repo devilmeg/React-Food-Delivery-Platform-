@@ -14,3 +14,4 @@
 # Ignore dummy.css
 dummy.css
 style.css
+/coverage
